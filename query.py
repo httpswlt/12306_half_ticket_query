@@ -7,6 +7,7 @@ from collections import OrderedDict
 from openpyxl import Workbook
 import time
 import random
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 headers_firefox = {
@@ -18,34 +19,24 @@ headers_firefox = {
     "Host": "kyfw.12306.cn",
     "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0",
-    "Cookie": "JSESSIONID=C4502AA3D6A080A952510B96F4CF15CB; BIGipServerotn=1156579850.50210.0000; RAIL_EXPIRATION="
-              "1569796156959; RAIL_DEVICEID=nlIBK2z1jxKrLiRnOOa9nCkIAdqTldGiiaBLxqWQhP1qNscZdMowhjYKvyvyclrvFZkBtQV"
-              "zNi7P6Q34_W_25ilA7X6VQY5-AFIgAWcFsjuN4HImZfqYBbOkhrXDfeNlsg7gn9EQWv-i_I3ZFvAXJna0gtCnpx_I; "
-              "BIGipServerpool_passport=183304714.50215.0000; route=c5c62a339e7744272a54643b3be5bf64; "
-              "_jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u5E7F%u5DDE%2CGZQ; "
-              "_jc_save_fromDate=2019-09-26; _jc_save_toDate=2019-09-26; _jc_save_wfdc_flag=dc; "
-              "BIGipServerpassport=904397066.50215.0000"
+    "Cookie": "JSESSIONID=F6868BDFDD826F11A72E4932119EF136; BIGipServerotn=1156579850.50210.0000; RAIL_EXPIRATION=1569796156959; RAIL_DEVICEID=nlIBK2z1jxKrLiRnOOa9nCkIAdqTldGiiaBLxqWQhP1qNscZdMowhjYKvyvyclrvFZkBtQVzNi7P6Q34_W_25ilA7X6VQY5-AFIgAWcFsjuN4HImZfqYBbOkhrXDfeNlsg7gn9EQWv-i_I3ZFvAXJna0gtCnpx_I; BIGipServerpool_passport=183304714.50215.0000; route=c5c62a339e7744272a54643b3be5bf64; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u5E7F%u5DDE%2CGZQ; _jc_save_fromDate=2019-09-27; _jc_save_toDate=2019-09-27; _jc_save_wfdc_flag=dc; BIGipServerpassport=904397066.50215.0000"
 
 }
 
 headers_google = {
-    "Accept": "*/*",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;"
+              "q=0.8,application/signed-exchange;v=b3",
     "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US,en;q=0.9",
-    "Cache-Control": "no-cache",
     "Connection": "keep-alive",
     "Host": "kyfw.12306.cn",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-origin",
-    "X-Requested-With": "XMLHttpRequest",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
-    "Cookie": "JSESSIONID=2BE4CD1F9B04BFADD534E494AE14FA01; route=c5c62a339e7744272a54643b3be5bf64; _"
-              "jc_save_wfdc_flag=dc; RAIL_EXPIRATION=1569811344621; RAIL_DEVICEID=E9memzjv96LvvIx35PywH1XTeTcjd2r5m"
-              "Bx2GzPN833Ikco5hPPlS7N-nH3fUii7zRvMvOA_MIrAVZ7_cLo_slHqj9Crlh2aoUVS29798CSMFT5GUlgkM_n4ISARQqamK1s5a"
-              "jEC8NHpFF9K_HHYxRRtch53-FLh; _jc_save_fromStation=%u5317%u4EAC%2CBJP; BIGipServerpool_passport="
-              "183304714.50215.0000; BIGipServerotn=1473839370.50210.0000; _jc_save_toStation=%u6210%u90FD%2CCDW; "
-              "_jc_save_fromDate=2019-10-01; _jc_save_toDate=2019-09-27"
+    "Cookie": "JSESSIONID=27D34D0E07CF546A1997015F13D9BBC0; route=c5c62a339e7744272a54643b3be5bf64; _jc_save_wfdc_flag=dc; RAIL_EXPIRATION=1569811344621; RAIL_DEVICEID=E9memzjv96LvvIx35PywH1XTeTcjd2r5mBx2GzPN833Ikco5hPPlS7N-nH3fUii7zRvMvOA_MIrAVZ7_cLo_slHqj9Crlh2aoUVS29798CSMFT5GUlgkM_n4ISARQqamK1s5ajEC8NHpFF9K_HHYxRRtch53-FLh; _jc_save_fromStation=%u5317%u4EAC%2CBJP; BIGipServerpool_passport=183304714.50215.0000; _jc_save_toDate=2019-09-27; BIGipServerotn=703595018.38945.0000; _jc_save_toStation=%u5929%u6D25%2CTJP; _jc_save_fromDate=2019-10-03"
 
 }
 
@@ -64,7 +55,7 @@ class QueryPassStation:
         self.date = date
         self.pass_train_infos = None
 
-    def pass_station(self):
+    def pass_station(self, half=False):
         src_encode = stations[self.from_station]
         dst_encode = stations[self.to_station]
         url = self.root_url.format(self.train_no, src_encode, dst_encode, self.date)
@@ -73,16 +64,19 @@ class QueryPassStation:
         pass_station_names = []
         for station_info in self.pass_train_infos:
             pass_station_names.append(station_info['station_name'])
-        start_indx = pass_station_names.index(from_station)
-        end_indx = pass_station_names.index(to_station)
-        return pass_station_names[start_indx:end_indx + 1]
+        start_indx = pass_station_names.index(self.from_station)
+        end_indx = pass_station_names.index(self.to_station)
+        if half:
+            return pass_station_names[start_indx:end_indx + 1]
+        else:
+            return pass_station_names[start_indx:]
 
 
 def request_url(url, verify=False):
     count = 1
     while count:
         try:
-            headers = random.sample([headers_firefox, headers_google], 1)
+            headers = random.sample([headers_firefox, headers_google], 1)[0]
             response = requests.get(url, headers=headers, verify=verify)
             response.encoding = 'utf-8'
             available_trains = response.json()['data']
@@ -172,9 +166,8 @@ class QueryTrain:
             if 'type_' not in key:
                 continue
             ticket_info[key] = train_info[key]
-            ""
-            if train_info[key].isdigit():
-                print("=== train_no: {}, from {} to {}, type: {}, num: {} ===".
+            if train_info[key].isdigit() or '有' == train_info[key]:
+                print("================ train_no: {}, from {} to {}, type: {}, num: {} =================".
                       format(train_name, from_station, to_station, key, train_info[key]))
         return ticket_info
 
@@ -202,8 +195,11 @@ def get_all_infos(from_station, to_station, date):
         print("train_name: {}, pass station is {}".format(train_name, pass_stations))
         # query ticket information
         for pass_station in pass_stations[1:]:
-            ticket = qt.query_ticket_number(from_station, pass_station, date, train_name)
-            train_info[pass_station] = ticket
+            try:
+                ticket = qt.query_ticket_number(from_station, pass_station, date, train_name)
+                train_info[pass_station] = ticket
+            except Exception:
+                continue
         ticket_info['train_name'] = train_info['train_name']
         ticket_info['departure_time'] = train_info['departure_time']
         ticket_info['arrive_time'] = train_info['arrive_time']
@@ -213,7 +209,7 @@ def get_all_infos(from_station, to_station, date):
 
 
 if __name__ == '__main__':
-    date = '2019-10-01'
-    from_station = '北京西'
-    to_station = '信阳'
-    get_all_infos(from_station, to_station, date)
+    date1 = '2019-10-01'
+    from_station1 = '北京西'
+    to_station1 = '信阳'
+    get_all_infos(from_station1, to_station1, date1)
