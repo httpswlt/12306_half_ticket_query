@@ -167,8 +167,12 @@ class QueryTrain:
                 continue
             ticket_info[key] = train_info[key]
             if train_info[key].isdigit() or '有' == train_info[key]:
-                print("================ train_no: {}, from {} to {}, type: {}, num: {} =================".
-                      format(train_name, from_station, to_station, key, train_info[key]))
+                print("================ train_no: {}, from {} to {},  "
+                      "start_time: {}, end_time: {}, cost_time: {},"
+                      "type: {}, num: {} =================".
+                      format(train_name, from_station, to_station,
+                             train_info['departure_time'], train_info['arrive_time'],
+                             train_info['cost_time'], key, train_info[key]))
         return ticket_info
 
     def encode_url(self, src, dst, date):
@@ -208,8 +212,28 @@ def get_all_infos(from_station, to_station, date):
         all_tickets_infos.append(ticket_info)
 
 
+def timing_task(n):
+    while True:
+        print(time.strftime('%Y-%m-%d %X', time.localtime()))
+        # TODO  loop invoke.
+        pass
+        time.sleep(n)
+
+
+def main():
+    pass
+
+
 if __name__ == '__main__':
+    # date1 = '2019-10-07'
+    # from_station1 = '信阳'
+    # to_station1 = '北京'
+    # date1 = '2019-09-30'
+    # from_station1 = '北京'
+    # to_station1 = '信阳'
     date1 = '2019-10-01'
-    from_station1 = '北京西'
+    from_station1 = '太原'
     to_station1 = '信阳'
+    print("+++++++++++++++++ The informations of from {} to {} at {} +++++++++++++++++"
+          .format(from_station1, to_station1, date1))
     get_all_infos(from_station1, to_station1, date1)
