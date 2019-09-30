@@ -54,22 +54,24 @@ class QueryPassStation:
         self.to_station = to_station
         self.date = date
         self.pass_train_infos = None
+        self.from_station_previous = []
+        self.to_station_after = []
+        self.from_to_station = []
+        self.pass_station_names = []
 
-    def pass_station(self, half=False):
+    def pass_station(self):
         src_encode = stations[self.from_station]
         dst_encode = stations[self.to_station]
         url = self.root_url.format(self.train_no, src_encode, dst_encode, self.date)
         response = request_url(url)
         self.pass_train_infos = response['data']
-        pass_station_names = []
         for station_info in self.pass_train_infos:
-            pass_station_names.append(station_info['station_name'])
-        start_indx = pass_station_names.index(self.from_station)
-        end_indx = pass_station_names.index(self.to_station)
-        if half:
-            return pass_station_names[start_indx:end_indx + 1]
-        else:
-            return pass_station_names[start_indx:]
+            self.pass_station_names.append(station_info['station_name'])
+        start_indx = self.pass_station_names.index(self.from_station)
+        end_indx = self.pass_station_names.index(self.to_station)
+        self.from_station_previous = self.pass_station_names[:start_indx + 1]
+        self.from_to_station = self.pass_station_names[start_indx + 1: end_indx + 1]
+        self.to_station_after = self.pass_station_names[end_indx + 1:]
 
 
 def request_url(url, verify=False):
@@ -167,6 +169,8 @@ class QueryTrain:
                 continue
             ticket_info[key] = train_info[key]
             if train_info[key].isdigit() or '有' == train_info[key]:
+                if key == "type_no_seat":
+                    continue
                 print("================ train_no: {}, from {} to {},  "
                       "start_time: {}, end_time: {}, cost_time: {},"
                       "type: {}, num: {} =================".
@@ -182,7 +186,20 @@ class QueryTrain:
         return url
 
 
-def get_all_infos(from_station, to_station, date):
+def get_interval_infos(qps, ticket_length):
+    start_stations = []
+    if "all" in ticket_length:
+        start_stations = qps.from_station_previous
+    elif "half" in ticket_length:
+        start_stations = [qps.from_station]
+    else:
+        print("only support all or half parameters")
+        exit(0)
+    end_stations = qps.from_to_station + qps.to_station_after
+    return start_stations, end_stations
+
+
+def get_all_infos(from_station, to_station, date, ticket_length):
     all_tickets_infos = []
 
     qt = QueryTrain()
@@ -195,20 +212,20 @@ def get_all_infos(from_station, to_station, date):
         to_station = train_info['to_station']
         train_no = train_info['train_no']
         qps = QueryPassStation(train_no, from_station, to_station, start_time)
-        pass_stations = qps.pass_station()
-        print("train_name: {}, pass station is {}".format(train_name, pass_stations))
+        qps.pass_station()
+        print("train_name: {}, pass station is {}".format(train_name, qps.pass_station_names))
         # query ticket information
-        for pass_station in pass_stations[1:]:
-            try:
-                ticket = qt.query_ticket_number(from_station, pass_station, date, train_name)
-                train_info[pass_station] = ticket
-            except Exception:
-                continue
+        start_stations, end_stations = get_interval_infos(qps, ticket_length)
+        for start_station in start_stations:
+            for end_station in end_stations:
+                try:
+                    ticket = qt.query_ticket_number(start_station, end_station, date, train_name)
+                except Exception:
+                    continue
         ticket_info['train_name'] = train_info['train_name']
         ticket_info['departure_time'] = train_info['departure_time']
         ticket_info['arrive_time'] = train_info['arrive_time']
         ticket_info['cost_time'] = train_info['cost_time']
-        ticket_info['pass_station'] = pass_stations
         all_tickets_infos.append(ticket_info)
 
 
@@ -225,15 +242,16 @@ def main():
 
 
 if __name__ == '__main__':
-    # date1 = '2019-10-07'
-    # from_station1 = '信阳'
-    # to_station1 = '北京'
+    date1 = '2019-10-06'
+    from_station1 = '信阳'
+    to_station1 = '北京'
     # date1 = '2019-09-30'
     # from_station1 = '北京'
     # to_station1 = '信阳'
-    date1 = '2019-10-01'
-    from_station1 = '太原'
-    to_station1 = '信阳'
+    # date1 = '2019-10-01'
+    # from_station1 = '太原'
+    # to_station1 = '信阳'
+    ticket_length = "all"
     print("+++++++++++++++++ The informations of from {} to {} at {} +++++++++++++++++"
           .format(from_station1, to_station1, date1))
-    get_all_infos(from_station1, to_station1, date1)
+    get_all_infos(from_station1, to_station1, date1, ticket_length)
