@@ -188,14 +188,19 @@ class QueryTrain:
 
 def get_interval_infos(qps, ticket_length):
     start_stations = []
+    end_stations = []
     if "all" in ticket_length:
         start_stations = qps.from_station_previous
+        end_stations = qps.from_to_station + qps.to_station_after
     elif "half" in ticket_length:
         start_stations = [qps.from_station]
+        end_stations = qps.from_to_station + qps.to_station_after
+    elif "all_end" in ticket_length:
+        start_stations = qps.from_station_previous
+        end_stations = [qps.to_station]
     else:
         print("only support all or half parameters")
         exit(0)
-    end_stations = qps.from_to_station + qps.to_station_after
     return start_stations, end_stations
 
 
@@ -242,16 +247,16 @@ def main():
 
 
 if __name__ == '__main__':
-    date1 = '2019-10-06'
+    date1 = '2019-10-07'
     from_station1 = '信阳'
-    to_station1 = '北京'
+    to_station1 = '郑州'
     # date1 = '2019-09-30'
     # from_station1 = '北京'
     # to_station1 = '信阳'
     # date1 = '2019-10-01'
     # from_station1 = '太原'
     # to_station1 = '信阳'
-    ticket_length = "all"
+    ticket_length = "all_end"
     print("+++++++++++++++++ The informations of from {} to {} at {} +++++++++++++++++"
           .format(from_station1, to_station1, date1))
     get_all_infos(from_station1, to_station1, date1, ticket_length)
