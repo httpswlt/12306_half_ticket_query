@@ -65,6 +65,8 @@ class QueryPassStation:
         url = self.root_url.format(self.train_no, src_encode, dst_encode, self.date)
         response = request_url(url)
         self.pass_train_infos = response['data']
+        if len(self.pass_train_infos) == 0:
+            return
         for station_info in self.pass_train_infos:
             self.pass_station_names.append(station_info['station_name'])
         start_indx = self.pass_station_names.index(self.from_station)
@@ -91,7 +93,7 @@ def request_url(url, verify=False):
 
 
 class QueryTrain:
-    root_url = 'https://kyfw.12306.cn/otn/leftTicket/queryA?' \
+    root_url = 'https://kyfw.12306.cn/otn/leftTicket/query?' \
                'leftTicketDTO.train_date={}' \
                '&leftTicketDTO.from_station={}' \
                '&leftTicketDTO.to_station={}' \
@@ -189,13 +191,13 @@ class QueryTrain:
 def get_interval_infos(qps, ticket_length):
     start_stations = []
     end_stations = []
-    if "all" in ticket_length:
+    if "all" == ticket_length:
         start_stations = qps.from_station_previous
         end_stations = qps.from_to_station + qps.to_station_after
-    elif "half" in ticket_length:
+    elif "half" == ticket_length:
         start_stations = [qps.from_station]
         end_stations = qps.from_to_station + qps.to_station_after
-    elif "all_end" in ticket_length:
+    elif "all_end" == ticket_length:
         start_stations = qps.from_station_previous
         end_stations = [qps.to_station]
     else:
@@ -247,16 +249,18 @@ def main():
 
 
 if __name__ == '__main__':
-    date1 = '2019-10-07'
-    from_station1 = '信阳'
-    to_station1 = '郑州'
-    # date1 = '2019-09-30'
-    # from_station1 = '北京'
-    # to_station1 = '信阳'
+    # date1 = '2019-10-07'
+    # from_station1 = '信阳'
+    # to_station1 = '郑州'
+    date1 = '2020-09-30'
+    # date1 = '2020-01-19'
+    from_station1 = '北京'
+    to_station1 = '信阳'
+    # to_station1 = '郑州'
     # date1 = '2019-10-01'
     # from_station1 = '太原'
     # to_station1 = '信阳'
-    ticket_length = "all_end"
+    ticket_length = "all"
     print("+++++++++++++++++ The informations of from {} to {} at {} +++++++++++++++++"
           .format(from_station1, to_station1, date1))
     get_all_infos(from_station1, to_station1, date1, ticket_length)
